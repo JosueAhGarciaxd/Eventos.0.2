@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useEvents } from '../hooks/useEvents';
 import Title from '../components/Title';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import Message from '../components/Message.jsx';
+import Message from '../components/Message';
+import EventForm from '../components/EventFrom';
 
 /**
  * Página principal/Dashboard de la aplicación Event Planner
@@ -12,6 +14,20 @@ const HomePage = () => {
     const [showMessage, setShowMessage] = useState(false);
     const [messageType, setMessageType] = useState('info');
     const [messageText, setMessageText] = useState('');
+    const [showCreateForm, setShowCreateForm] = useState(false);
+    const [editingEvent, setEditingEvent] = useState(null);
+
+    // Hook principal para manejar eventos
+    const {
+        events,
+        isLoading,
+        hasError,
+        errorMessage,
+        createEvent,
+        updateEvent,
+        deleteEvent,
+        refetch
+    } = useEvents();
 
     // Función para mostrar mensajes temporales
     const showNotification = (text, type = 'info') => {
@@ -19,19 +35,71 @@ const HomePage = () => {
         setMessageType(type);
         setShowMessage(true);
 
-        // Auto-ocultar después de 3 segundos
+        // Auto-ocultar después de 4 segundos
         setTimeout(() => {
             setShowMessage(false);
-        }, 3000);
+        }, 4000);
     };
 
-    // Funciones placeholder para las operaciones CRUD
+    // Función para manejar la creación de eventos
     const handleCreateEvent = () => {
-        showNotification('Función crear evento - Por implementar', 'info');
+        setShowCreateForm(true);
+        setEditingEvent(null);
     };
 
-    const handleViewEvents = () => {
-        showNotification('Cargando eventos...', 'info');
+    // Función para manejar la edición de eventos
+    const handleEditEvent = (event) => {
+        setEditingEvent(event);
+        setShowCreateForm(true);
+    };
+
+    // Función para manejar la eliminación de eventos
+    const handleDeleteEvent = async (eventId, eventName) => {
+        if (window.confirm(`¿Estás seguro de que quieres eliminar el evento "${eventName}"?`)) {
+            const result = await deleteEvent(eventId);
+            if (result.success) {
+                showNotification(result.message, 'success');
+            } else {
+                showNotification(result.error, 'error');
+            }
+        }
+    };
+
+    // Función para refrescar eventos
+    const handleRefreshEvents = () => {
+        refetch();
+        showNotification('Refrescando eventos...', 'info');
+    };
+
+    // Función para manejar el envío del formulario
+    const handleFormSubmit = async (formData) => {
+        try {
+            let result;
+
+            if (editingEvent) {
+                // Actualizar evento existente
+                result = await updateEvent(editingEvent.id, formData);
+            } else {
+                // Crear nuevo evento
+                result = await createEvent(formData);
+            }
+
+            if (result.success) {
+                showNotification(result.message, 'success');
+                setShowCreateForm(false);
+                setEditingEvent(null);
+            } else {
+                showNotification(result.error, 'error');
+            }
+        } catch (error) {
+            showNotification('Error inesperado al procesar el evento', 'error');
+        }
+    };
+
+    // Función para cancelar el formulario
+    const handleCancelForm = () => {
+        setShowCreateForm(false);
+        setEditingEvent(null);
     };
 
     return (
@@ -59,6 +127,15 @@ const HomePage = () => {
                     onClose={() => setShowMessage(false)}
                 />
 
+                {/* Mensaje de error de la API */}
+                {hasError && (
+                    <Message
+                        text={`Error: ${errorMessage}`}
+                        type="error"
+                        show={true}
+                    />
+                )}
+
                 {/* Acciones principales */}
                 <section className="dashboard-actions">
                     <Card className="action-card">
@@ -73,25 +150,98 @@ const HomePage = () => {
                             />
 
                             <Button
-                                text="Ver Todos los Eventos"
-                                onClick={handleViewEvents}
+                                text="Refrescar Eventos"
+                                onClick={handleRefreshEvents}
                                 variant="secondary"
+                                disabled={isLoading}
                             />
                         </div>
                     </Card>
                 </section>
 
-                {/* Área de contenido principal - aquí irán los eventos */}
-                <section className="events-section">
-                    <Title text="Eventos Recientes" level="h2" />
+                {/* Formulario de crear/editar evento */}
+                {showCreateForm && (
+                    <EventForm
+                        event={editingEvent}
+                        onSubmit={handleFormSubmit}
+                        onCancel={handleCancelForm}
+                        loading={isLoading}
+                    />
+                )}
 
-                    <div className="events-grid">
-                        {/* Placeholder para los eventos */}
-                        <Card className="event-card-placeholder">
-                            <p>Los eventos se mostrarán aquí una vez implementado el CRUD</p>
-                        </Card>
-                    </div>
-                </section>
+                {/* Área de contenido principal - eventos */}
+                {!showCreateForm && (
+                    <section className="events-section">
+                        <div className="events-header">
+                            <Title text="Lista de Eventos" level="h2" />
+                            {events && (
+                                <span className="events-count">
+                                    Total: {events.length} evento(s)
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Estado de carga */}
+                        {isLoading && (
+                            <Card className="loading-card">
+                                <p>Cargando eventos...</p>
+                            </Card>
+                        )}
+
+                        {/* Lista de eventos */}
+                        {!isLoading && events && events.length > 0 && (
+                            <div className="events-grid">
+                                {events.map((event) => (
+                                    <Card key={event.id} className="event-card">
+                                        <div className="event-card-header">
+                                            <Title text={event.evento} level="h3" className="event-title" />
+                                            <span className={`event-type ${event.tipoEvento.toLowerCase()}`}>
+                                                {event.tipoEvento}
+                                            </span>
+                                        </div>
+
+                                        <div className="event-card-body">
+                                            <p className="event-location">
+                                                <strong>📍 Ubicación:</strong> {event.direccion}
+                                            </p>
+
+                                            <p className="event-description">
+                                                <strong>📝 Descripción:</strong> {event.descripcion}
+                                            </p>
+                                        </div>
+
+                                        <div className="event-card-actions">
+                                            <Button
+                                                text="Editar"
+                                                onClick={() => handleEditEvent(event)}
+                                                variant="secondary"
+                                            />
+
+                                            <Button
+                                                text="Eliminar"
+                                                onClick={() => handleDeleteEvent(event.id, event.evento)}
+                                                variant="danger"
+                                            />
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Estado vacío */}
+                        {!isLoading && events && events.length === 0 && (
+                            <Card className="empty-state-card">
+                                <Title text="No hay eventos" level="h3" />
+                                <p>No se encontraron eventos. ¡Crea tu primer evento!</p>
+                                <Button
+                                    text="Crear Primer Evento"
+                                    onClick={handleCreateEvent}
+                                    variant="primary"
+                                />
+                            </Card>
+                        )}
+                    </section>
+                )}
             </div>
         </div>
     );
