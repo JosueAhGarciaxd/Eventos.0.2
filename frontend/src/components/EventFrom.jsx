@@ -6,13 +6,6 @@ import Button from './Button';
 import Card from './Card';
 import { EVENT_TYPES } from '../utils/apiUrl';
 
-/**
- * Componente de formulario para crear y editar eventos
- * @param {object} event - Evento a editar (null para crear nuevo)
- * @param {function} onSubmit - Función a ejecutar al enviar el formulario
- * @param {function} onCancel - Función a ejecutar al cancelar
- * @param {boolean} loading - Estado de carga
- */
 const EventForm = ({ event, onSubmit, onCancel, loading = false }) => {
     const {
         register,

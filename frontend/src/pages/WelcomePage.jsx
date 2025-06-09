@@ -4,11 +4,6 @@ import Title from '../components/Title.jsx';
 import Button from '../components/Button.jsx';
 import Card from '../components/Card.jsx';
 
-/**
- * Página de bienvenida de la aplicación Event Planner
- * Muestra un mensaje de bienvenida y redirige automáticamente
- * o permite al usuario proceder manualmente
- */
 const WelcomePage = () => {
     const navigate = useNavigate();
     const [countdown, setCountdown] = useState(5);

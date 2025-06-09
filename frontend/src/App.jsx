@@ -4,19 +4,18 @@ import WelcomePage from './pages/WelcomePage.jsx';
 import HomePage from './pages/HomePage.jsx';
 import './App.css';
 
-/**
- * Componente principal de la aplicación Event Planner
- * Configura el routing y las rutas principales
- */
 function App() {
   return (
+
+    /* Rutas */
+
     <Router>
       <div className="App">
         <Routes>
           {/* Ruta de bienvenida */}
           <Route path="/" element={<WelcomePage />} />
 
-          {/* Ruta del dashboard principal */}
+          {/* Ruta de la pantalla principal */}
           <Route path="/home" element={<HomePage />} />
         </Routes>
       </div>

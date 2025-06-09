@@ -6,10 +6,6 @@ import Card from '../components/Card';
 import Message from '../components/Message';
 import EventForm from '../components/EventFrom';
 
-/**
- * Página principal/Dashboard de la aplicación Event Planner
- * Aquí se realizarán las operaciones CRUD de eventos
- */
 const HomePage = () => {
     const [showMessage, setShowMessage] = useState(false);
     const [messageType, setMessageType] = useState('info');
@@ -17,7 +13,7 @@ const HomePage = () => {
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
 
-    // Hook principal para manejar eventos
+    // Hook para manejar eventos
     const {
         events,
         isLoading,
@@ -232,7 +228,7 @@ const HomePage = () => {
                         {!isLoading && events && events.length === 0 && (
                             <Card className="empty-state-card">
                                 <Title text="No hay eventos" level="h3" />
-                                <p>No se encontraron eventos. ¡Crea tu primer evento!</p>
+                                <p>No se encontraron eventos.</p>
                                 <Button
                                     text="Crear Primer Evento"
                                     onClick={handleCreateEvent}
