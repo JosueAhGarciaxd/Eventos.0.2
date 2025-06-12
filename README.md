@@ -35,14 +35,15 @@ npm run dev
 
 ```
 Eventos/
-├── backend/
 ├── frontend/
     ├── node_modules/
     ├── public/
     ├── src/
         ├── assets/
         ├── components/
+        ├── hooks/
         ├── pages/
+        ├── utils/
         ├── App.css
         ├── App.jsx
         ├── index.css
