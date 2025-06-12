@@ -34,7 +34,7 @@ npm run dev
 ## Estructura del Proyecto
 
 ```
-LUXEPET/
+Eventos/
 ├── backend/
 ├── frontend/
     ├── node_modules/
